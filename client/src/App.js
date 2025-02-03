@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { ethers, BrowserProvider, Contract } from "ethers";
-import { Routes, Route } from "react-router-dom"; // No BrowserRouter here
+import { Routes, Route, useNavigate } from "react-router-dom";
 import contractABI from "./contractABI.json";
 import CreateCampaign from "./components/CreateCampaign";
 import DisplayCampaigns from "./components/DisplayCampaigns";
 import CampaignDetails from "./components/CampaignDetails";
+import Navbar from "./components/Navbar";
 
 const contractAddress = "0x5c1B2A0F3b94BF1D87953B9B364ad2A051F2081e";
 
@@ -15,6 +16,8 @@ function App() {
   const [campaigns, setCampaigns] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const [address, setAddress] = useState("");
+  
+  const navigate = useNavigate(); // Hook for navigation
 
   useEffect(() => {
     const initProvider = async () => {
@@ -90,33 +93,54 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#0a192f] text-white p-4">
-      <div className="max-w-6xl mx-auto">
-        <header className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Crowdfunding Platform</h1>
-          {!isConnected ? (
-            <button onClick={connectWallet} className="bg-blue-500 px-6 py-2 rounded-lg hover:bg-blue-600">
-              Connect Wallet
-            </button>
-          ) : (
-            <div className="text-sm text-gray-600">
-              Connected: {String(address).slice(0, 6)}...{String(address).slice(-4)}
-            </div>
-          )}
-        </header>
+      {/* Navbar with Create Campaign button inside */}
+      <Navbar 
+        connectWallet={connectWallet} 
+        address={address} 
+        isConnected={isConnected} 
+      />
 
+      <div className="max-w-6xl mx-auto mt-16">
         <Routes>
-          <Route
-            path="/"
+          <Route 
+            path="/" 
             element={
-              isConnected && (
-                <>
-                  <CreateCampaign contract={contract} signer={signer} fetchCampaigns={fetchCampaigns} />
-                  <DisplayCampaigns campaigns={campaigns} loading={false} contract={contract} />
-                </>
+              isConnected ? (
+                <DisplayCampaigns 
+                  campaigns={campaigns} 
+                  loading={false} 
+                  contract={contract} 
+                  fetchCampaigns={fetchCampaigns} 
+                />
+              ) : (
+                <div className="text-center text-gray-400 mt-10">
+                  <p>Please connect your wallet to view and create campaigns.</p>
+                </div>
               )
-            }
+            } 
           />
-          <Route path="/campaign/:id" element={<CampaignDetails campaigns={campaigns} contract={contract} />} />
+
+          <Route 
+            path="/create-campaign" 
+            element={
+              isConnected ? (
+                <CreateCampaign 
+                  contract={contract} 
+                  signer={signer} 
+                  fetchCampaigns={fetchCampaigns} 
+                />
+              ) : (
+                <div className="text-center text-gray-400 mt-10">
+                  <p>Please connect your wallet to create a campaign.</p>
+                </div>
+              )
+            } 
+          />
+
+          <Route 
+            path="/campaign/:id" 
+            element={<CampaignDetails campaigns={campaigns} contract={contract} />} 
+          />
         </Routes>
       </div>
     </div>

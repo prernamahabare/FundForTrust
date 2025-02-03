@@ -1,38 +1,38 @@
 /* global BigInt */
-import React, { useState } from 'react';
-import { ethers } from 'ethers';
+import React, { useState } from "react";
+import { ethers } from "ethers";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const CreateCampaign = ({ contract, signer, fetchCampaigns }) => {
+  const navigate = useNavigate(); // Initialize navigate
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    target: '',
-    deadline: '',
-    image: ''
+    title: "",
+    description: "",
+    target: "",
+    deadline: "",
+    image: "",
   });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate form
+
     if (!formData.title || !formData.description || !formData.target || !formData.deadline || !formData.image) {
-      alert('Please fill in all fields');
+      alert("Please fill in all fields");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // Estimate gas before sending transaction
       const gasEstimate = await contract.createCampaign.estimateGas(
         await signer.getAddress(),
         formData.title,
@@ -42,8 +42,7 @@ const CreateCampaign = ({ contract, signer, fetchCampaigns }) => {
         formData.image
       );
 
-      // Add 20% buffer to gas estimate
-      const gasLimit = gasEstimate + (gasEstimate * BigInt(20) / BigInt(100));
+      const gasLimit = gasEstimate + (gasEstimate * BigInt(20)) / BigInt(100);
 
       const tx = await contract.createCampaign(
         await signer.getAddress(),
@@ -55,7 +54,7 @@ const CreateCampaign = ({ contract, signer, fetchCampaigns }) => {
         {
           gasLimit: gasLimit,
           maxFeePerGas: ethers.parseUnits("50", "gwei"),
-          maxPriorityFeePerGas: ethers.parseUnits("2", "gwei")
+          maxPriorityFeePerGas: ethers.parseUnits("2", "gwei"),
         }
       );
 
@@ -63,20 +62,23 @@ const CreateCampaign = ({ contract, signer, fetchCampaigns }) => {
 
       // Reset form
       setFormData({
-        title: '',
-        description: '',
-        target: '',
-        deadline: '',
-        image: ''
+        title: "",
+        description: "",
+        target: "",
+        deadline: "",
+        image: "",
       });
 
       // Refresh campaigns list
       await fetchCampaigns(contract);
-      
-      alert('Campaign created successfully!');
+
+      alert("Campaign created successfully!");
+
+      // Navigate to Display Campaigns Page
+      navigate("/");
     } catch (error) {
-      console.error('Error creating campaign:', error);
-      alert('Error creating campaign. Check console for details.');
+      console.error("Error creating campaign:", error);
+      alert("Error creating campaign. Check console for details.");
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +87,7 @@ const CreateCampaign = ({ contract, signer, fetchCampaigns }) => {
   return (
     <div className="bg-white rounded-lg shadow p-6 mb-8">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">Create New Campaign</h2>
-      
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
@@ -167,7 +169,7 @@ const CreateCampaign = ({ contract, signer, fetchCampaigns }) => {
           disabled={isLoading}
           className="w-full bg-[#1e3a8a] text-white py-2 px-4 rounded-md hover:bg-[#1e40af] focus:outline-none focus:ring-2 focus:ring-[#0d2d5c] focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
         >
-          {isLoading ? 'Creating Campaign...' : 'Create Campaign'}
+          {isLoading ? "Creating Campaign..." : "Create Campaign"}
         </button>
       </form>
     </div>
