@@ -1,70 +1,41 @@
 /* global BigInt */
 import React, { useState } from "react";
 import { ethers } from "ethers";
+import { Link } from "react-router-dom";
 import defaultImage from "../assets/demo.jpeg";
 
 const DisplayCampaigns = ({ campaigns, loading, contract, fetchCampaigns }) => {
   const [donationLoading, setDonationLoading] = useState(false);
-  const [donationAmounts, setDonationAmounts] = useState({}); // Store user input for each campaign
+  const [donationAmounts, setDonationAmounts] = useState({});
 
-  // Format remaining time
   const getRemainingTime = (deadline) => {
     const now = new Date().getTime();
-    const deadlineTime = deadline * 1000; // Convert to milliseconds
+    const deadlineTime = deadline * 1000;
     const remaining = deadlineTime - now;
-
     if (remaining <= 0) return "Ended";
-
     const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
     const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-
     return `${days}d ${hours}h remaining`;
   };
 
-  // Handle donation
-  const donate = async (id) => {
-    const amount = donationAmounts[id]; // Get the amount entered for this campaign
-
-    if (!amount || isNaN(amount) || Number(amount) <= 0) {
-      alert("Please enter a valid donation amount.");
+  const donate = async (campaignId, donationAmount) => {
+    if (!donationAmount || isNaN(donationAmount) || Number(donationAmount) <= 0) {
+      alert("Please enter a valid amount");
       return;
     }
 
     setDonationLoading(true);
     try {
-      console.log("Donating to Campaign ID:", id);
-      console.log("Donation Amount:", amount);
-
-      const parsedAmount = ethers.parseEther(amount); // Convert ETH to Wei
-      console.log("Parsed Amount (in Wei):", parsedAmount.toString());
-
-      const tx = await contract.donateToCampaign(BigInt(id), {
-        value: parsedAmount,
-        gasLimit: ethers.parseUnits("500000", "wei"), // Set a fixed gas limit
-        maxFeePerGas: ethers.parseUnits("50", "gwei"),
-        maxPriorityFeePerGas: ethers.parseUnits("2", "gwei"),
-      });
-
+      const parsedAmount = ethers.parseEther(donationAmount);
+      const tx = await contract.donateToCampaign(BigInt(campaignId), { value: parsedAmount });
       await tx.wait();
-
-      // Refresh campaigns
-      await fetchCampaigns(contract);
       alert("Donation successful!");
-      
+      fetchCampaigns(); // Refresh the campaigns to reflect updated amount raised
     } catch (error) {
-      console.error("Error making donation:", error);
-      alert("Error donating. Check console for details.");
-    } finally {
-      setDonationLoading(false);
+      console.error("Error:", error);
+      alert("Donation failed!");
     }
-  };
-
-  // Handle input change
-  const handleAmountChange = (campaignId, value) => {
-    setDonationAmounts((prev) => ({
-      ...prev,
-      [campaignId]: value,
-    }));
+    setDonationLoading(false);
   };
 
   if (campaigns.length === 0) {
@@ -77,71 +48,73 @@ const DisplayCampaigns = ({ campaigns, loading, contract, fetchCampaigns }) => {
         const raised = Number(ethers.formatEther(campaign.amountCollected));
         const target = Number(ethers.formatEther(campaign.target));
         const isTargetAchieved = raised >= target;
+        const deadlinePassed = Number(campaign.deadline) * 1000 < Date.now();
 
         return (
-          <div key={i} className="bg-white rounded-lg shadow overflow-hidden p-4">
-            <img
-              src={campaign.image}
-              alt={campaign.title}
-              className="w-full h-48 object-cover"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = defaultImage;
-              }}
-            />
+          <div key={i} className="bg-white rounded-lg shadow overflow-hidden p-4 text-blue-600">
+            <Link to={`/campaign/${i}`}>
+              <img
+                src={campaign.image}
+                alt={campaign.title}
+                className="w-full h-48 object-cover"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = defaultImage;
+                }}
+              />
+              <div className="p-4">
+                <h3 className="text-xl font-semibold mb-2">{campaign.title}</h3>
+              </div>
+            </Link>
 
-            <h3 className="text-xl text-gray-800 font-semibold mb-2">{campaign.title}</h3>
-            <p className="text-gray-600 mb-4">{campaign.description}</p>
-
-            {/* Progress Bar */}
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2">
               <div
                 className="bg-blue-600 h-2.5 rounded-full"
-                style={{
-                  width: `${Math.min((raised / target) * 100, 100)}%`,
-                }}
-              ></div>
+                style={{ width: `${Math.min((raised / target) * 100, 100)}%` }}
+              />
             </div>
 
-            {/* Campaign Stats */}
-            <div className="flex justify-between text-sm text-gray-800 mt-2">
-              <span>Raised: {raised} ETH</span>
-              <span>Target: {target} ETH</span>
+            <div className="flex justify-between text-sm mb-2">
+              <span>Raised: {raised.toFixed(4)} ETH</span>
+              <span>Goal: {target.toFixed(4)} ETH</span>
             </div>
 
-            <div className="flex items-center justify-between text-sm text-gray-600 mt-1">
+            <div className="flex justify-between text-sm text-gray-500">
               <span>{getRemainingTime(Number(campaign.deadline))}</span>
               <span>
-                By: {String(campaign.owner).slice(0, 6)}...
-                {String(campaign.owner).slice(-4)}
+                {String(campaign.owner).slice(0, 6)}...{String(campaign.owner).slice(-4)}
               </span>
             </div>
 
-            {/* Input field for donation amount */}
-            {!isTargetAchieved && (
-              <>
+            {isTargetAchieved && (
+              <div className="mt-4 p-2 bg-green-100 text-green-700 rounded text-center">
+                🎉 Target Achieved!
+              </div>
+            )}
+            {deadlinePassed && !isTargetAchieved && (
+              <div className="mt-4 p-2 bg-red-100 text-red-700 rounded text-center">
+                ⏳ Funding Period Ended
+              </div>
+            )}
+
+            {/* Donate Button */}
+            {!isTargetAchieved && !deadlinePassed && (
+              <div className="mt-4">
                 <input
                   type="number"
-                  placeholder="Enter amount (ETH)"
-                  value={donationAmounts[i] || ""}
-                  onChange={(e) => handleAmountChange(i, e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 text-blue-600 rounded-md mt-2 focus:ring-[#1e3a8a] focus:border-[#1e3a8a]"
+                  min="0"
+                  step="any"
+                  placeholder="ETH amount"
+                  onChange={(e) => setDonationAmounts({ ...donationAmounts, [i]: e.target.value })}
+                  className="w-full p-2 border rounded mb-2"
                 />
-
                 <button
-                  onClick={() => donate(i)}
-                  disabled={donationLoading || Number(campaign.deadline) * 1000 < Date.now()}
-                  className="w-full bg-[#1e3a8a] text-white px-4 py-2 rounded-md hover:bg-[#1e40af] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-[#0d2d5c] focus:ring-offset-2 mt-2"
+                  onClick={() => donate(i, donationAmounts[i])}
+                  disabled={donationLoading}
+                  className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
                 >
                   {donationLoading ? "Processing..." : "Donate"}
                 </button>
-              </>
-            )}
-
-            {/* Show "Target Achieved" instead of Donate Button if goal is met */}
-            {isTargetAchieved && (
-              <div className="w-full bg-green-600 text-white px-4 py-2 rounded-md text-center mt-2">
-                🎉 Target Achieved!
               </div>
             )}
           </div>
