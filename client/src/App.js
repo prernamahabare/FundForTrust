@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { ethers, BrowserProvider, Contract } from "ethers";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import contractABI from "./contractABI.json";
 import CreateCampaign from "./components/CreateCampaign";
 import DisplayCampaigns from "./components/DisplayCampaigns";
 import CampaignDetails from "./components/CampaignDetails";
+import Profile from "./components/Profile";
 import Navbar from "./components/Navbar";
+import Home from "./components/Home";
+import Loader from "./components/Loader";
+import Sidebar from "./components/Sidebar";
 
 const contractAddress = "0x5c1B2A0F3b94BF1D87953B9B364ad2A051F2081e";
 
@@ -14,27 +18,36 @@ function App() {
   const [signer, setSigner] = useState(null);
   const [contract, setContract] = useState(null);
   const [campaigns, setCampaigns] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [address, setAddress] = useState("");
-  
-  const navigate = useNavigate(); // Hook for navigation
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const initProvider = async () => {
+      setInitialLoading(true);
       if (window.ethereum) {
         try {
           const web3Provider = new BrowserProvider(window.ethereum);
           setProvider(web3Provider);
+
           const accounts = await web3Provider.listAccounts();
-          if (accounts.length > 0) handleAccountsChanged(accounts);
+          if (accounts.length > 0) {
+            await handleAccountsChanged(accounts);
+          }
+
           window.ethereum.on("accountsChanged", handleAccountsChanged);
-          window.ethereum.on("chainChanged", () => window.location.reload());
+          window.ethereum.on("chainChanged", () => {
+            window.location.reload();
+          });
         } catch (error) {
           console.error("Error initializing provider:", error);
         }
-      } else {
-        alert("Please install MetaMask to interact with this app.");
       }
+      setInitialLoading(false);
     };
 
     initProvider();
@@ -54,94 +67,143 @@ function App() {
       setContract(null);
     } else {
       setAddress(accounts[0]);
-      await connectWallet();
+      await connectWallet(false);
     }
   };
 
-  const connectWallet = async () => {
+  const connectWallet = async (shouldNavigate = true) => {
+    setLoading(true);
     try {
-      if (!provider) {
+      if (!window.ethereum) {
         alert("Please install MetaMask!");
         return;
       }
+
+      const web3Provider = new BrowserProvider(window.ethereum);
+      setProvider(web3Provider);
+
       await window.ethereum.request({ method: "eth_requestAccounts" });
-      const web3Signer = await provider.getSigner();
+      const web3Signer = await web3Provider.getSigner();
       setSigner(web3Signer);
 
-      try {
-        const crowdfundingContract = new Contract(contractAddress, contractABI, web3Signer);
-        setContract(crowdfundingContract);
-        setIsConnected(true);
-        await fetchCampaigns(crowdfundingContract);
-      } catch (error) {
-        console.error("Error creating contract instance:", error);
+      const crowdfundingContract = new Contract(contractAddress, contractABI, web3Signer);
+      setContract(crowdfundingContract);
+      setIsConnected(true);
+
+      await fetchCampaigns(crowdfundingContract);
+
+      if (shouldNavigate && location.pathname !== "/") {
+        navigate("/display-campaign");
       }
     } catch (error) {
       console.error("Error connecting wallet:", error);
       alert("Error connecting wallet. Check console for details.");
     }
+    setLoading(false);
   };
 
   const fetchCampaigns = async (contractInstance) => {
+    setLoading(true);
     try {
       const allCampaigns = await contractInstance.getCampaigns();
       setCampaigns(allCampaigns);
     } catch (error) {
       console.error("Error fetching campaigns:", error);
     }
+    setLoading(false);
   };
 
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen bg-[#0a192f] flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#0a192f] text-white p-4">
-      {/* Navbar with Create Campaign button inside */}
-      <Navbar 
-        connectWallet={connectWallet} 
-        address={address} 
-        isConnected={isConnected} 
-      />
+    <div className="min-h-screen bg-[#0a192f] text-white flex">
+      {/* Sidebar is shown on all pages except Home */}
+      {isConnected && location.pathname !== "/" && <Sidebar />}
 
-      <div className="max-w-6xl mx-auto mt-16">
-        <Routes>
-          <Route 
-            path="/" 
-            element={
-              isConnected ? (
-                <DisplayCampaigns 
-                  campaigns={campaigns} 
-                  loading={false} 
-                  contract={contract} 
-                  fetchCampaigns={fetchCampaigns} 
-                />
-              ) : (
-                <div className="text-center text-gray-400 mt-10">
-                  <p>Please connect your wallet to view and create campaigns.</p>
-                </div>
-              )
-            } 
-          />
+      {/* Main content area */}
+      <div className={`flex-1 p-4 ${isConnected && location.pathname !== "/" ? "ml-16" : ""}`}>
+        <Navbar connectWallet={connectWallet} address={address} isConnected={isConnected} />
 
-          <Route 
-            path="/create-campaign" 
-            element={
-              isConnected ? (
-                <CreateCampaign 
-                  contract={contract} 
-                  signer={signer} 
-                  fetchCampaigns={fetchCampaigns} 
-                />
-              ) : (
-                <div className="text-center text-gray-400 mt-10">
-                  <p>Please connect your wallet to create a campaign.</p>
-                </div>
-              )
-            } 
-          />
+        <div className="max-w-6xl mx-auto mt-16">
+          {loading ? (
+            <div className="flex bg-[#0a192f] items-center justify-center min-h-[60vh]">
+              <Loader />
+            </div>
+          ) : (
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <Home 
+                    isConnected={isConnected}
+                    connectWallet={() => connectWallet(false)}
+                  />
+                }
+              />
 
-          <Route 
-            path="/campaign/:id" 
-            element={<CampaignDetails campaigns={campaigns} contract={contract} />} 
-          />
-        </Routes>
+              <Route
+                path="/display-campaign"
+                element={
+                  isConnected ? (
+                    <DisplayCampaigns 
+                      campaigns={campaigns} 
+                      loading={loading} 
+                      contract={contract} 
+                      fetchCampaigns={fetchCampaigns}
+                    />
+                  ) : (
+                    <div className="text-center text-gray-400 mt-10">
+                      <p>Please connect your wallet to view and create campaigns.</p>
+                    </div>
+                  )
+                }
+              />
+
+              <Route
+                path="/create-campaign"
+                element={
+                  isConnected ? (
+                    <CreateCampaign 
+                      contract={contract} 
+                      signer={signer} 
+                      fetchCampaigns={fetchCampaigns}
+                    />
+                  ) : (
+                    <div className="text-center text-gray-400 mt-10">
+                      <p>Please connect your wallet to create a campaign.</p>
+                    </div>
+                  )
+                }
+              />
+
+              <Route 
+                path="/campaign/:id" 
+                element={
+                  <CampaignDetails 
+                    campaigns={campaigns} 
+                    contract={contract}
+                  />
+                } 
+              />
+
+              <Route 
+                path="/profile" 
+                element={
+                  <Profile 
+                    address={address} 
+                    campaigns={campaigns}
+                  />
+                } 
+              />
+            </Routes>
+          )}
+        </div>
       </div>
     </div>
   );

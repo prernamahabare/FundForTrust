@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { ethers } from "ethers";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import defaultImage from "../assets/demo.jpeg";
 
 const CampaignDetails = ({ campaigns, contract }) => {
@@ -10,11 +11,31 @@ const CampaignDetails = ({ campaigns, contract }) => {
   const [donationAmount, setDonationAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [isFundingEnded, setIsFundingEnded] = useState(false);
+  const [donors, setDonors] = useState([]);
+  const [showDonors, setShowDonors] = useState(false);
 
   useEffect(() => {
-    // Check if the campaign funding period has ended
-    const currentTime = Math.floor(Date.now() / 1000); // Current timestamp in seconds
+    if (!campaign) return;
+
+    const fetchDonors = async () => {
+      try {
+        const [donatorAddresses, donationAmounts] = await contract.getDonators(BigInt(id));
+        const donorList = donatorAddresses.map((address, index) => ({
+          address,
+          amount: ethers.formatEther(donationAmounts[index])
+        }));
+        setDonors(donorList);
+      } catch (error) {
+        console.error("Error fetching donors:", error);
+      }
+    };
+
+    fetchDonors();
+  }, [campaign, contract, id]);
+
+  useEffect(() => {
     if (campaign && campaign.deadline) {
+      const currentTime = Math.floor(Date.now() / 1000);
       setIsFundingEnded(currentTime > Number(campaign.deadline));
     }
   }, [campaign]);
@@ -30,17 +51,14 @@ const CampaignDetails = ({ campaigns, contract }) => {
       alert("Please enter a valid amount");
       return;
     }
-
     if (Number(raised) >= Number(goal)) {
       alert("Donation goal already reached! You cannot donate.");
       return;
     }
-
     if (isFundingEnded) {
       alert("The funding period has ended. Donations are no longer allowed.");
       return;
     }
-
     if (Number(donationAmount) > remaining) {
       alert(`You cannot donate more than the remaining amount (${remaining} ETH).`);
       return;
@@ -73,6 +91,20 @@ const CampaignDetails = ({ campaigns, contract }) => {
       <p className="text-gray-600"><strong>Raised:</strong> {raised} ETH</p>
       <p className="text-gray-600"><strong>Remaining:</strong> {remaining} ETH</p>
       <p className="text-gray-600 mt-4"><strong>Description:</strong> {campaign.description || "No description available."}</p>
+
+      {/* Donors Section with Dropdown Icon */}
+      <h3 className="text-xl font-bold mt-6 flex items-center cursor-pointer" onClick={() => setShowDonors(!showDonors)}>
+        Donors {showDonors ? <FaChevronUp className="ml-2" /> : <FaChevronDown className="ml-2" />}
+      </h3>
+      {showDonors && donors.length > 0 ? (
+        <ul className="mt-2 border p-3 rounded">
+          {donors.map((donor, index) => (
+            <li key={index} className="text-gray-700">
+              {String(donor.address).slice(0, 6)}...{String(donor.address).slice(-4)} donated {donor.amount} ETH
+            </li>
+          ))}
+        </ul>
+      ) : showDonors && <p className="text-gray-500">No donations yet.</p>}
 
       {isFundingEnded ? (
         <p className="text-red-600 font-bold mt-4">⚠️ The funding period has ended. No further donations allowed.</p>
