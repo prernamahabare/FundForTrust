@@ -1,7 +1,7 @@
 import { BrowserProvider, Contract } from "ethers";
 import contractABI from "./contractABI.json";
 
-const contractAddress = "0x5c1B2A0F3b94BF1D87953B9B364ad2A051F2081e"; // Replace with actual contract address
+const contractAddress = process.env.CONTRACT_ADDRESS; // Replace with actual contract address
 
 const getEthereumContract = async () => {
     if (window.ethereum) {
