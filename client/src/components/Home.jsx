@@ -15,30 +15,30 @@ const Home = ({ isConnected, connectWallet }) => {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <div className="flex-grow">
-        <div className="flex items-center justify-between py-12">
-          <div className="flex-1 text-left">
-            <h2 className="text-4xl font-bold mb-4">
-              Empower dreams, fund the future – your support makes ideas a reality!
-            </h2>
-            {!isConnected && (
-              <button
-                onClick={connectWallet}
-                className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                Connect Wallet
-              </button>
-            )}
-          </div>
-          <div className="flex-1 text-right">
-            <img 
-              src={heroImage} 
-              alt="Crowdfunding Illustration" 
-              className="mx-auto max-w-md rounded-lg shadow-lg"
-            />
-          </div>
-        </div>
-      </div>
+  <div className="flex-grow flex items-center justify-center py-12">
+  <div className="flex flex-col md:flex-row items-center justify-center w-full">
+    <div className="flex-1 text-center md:text-left">
+      <h2 className="text-4xl font-bold mb-4">
+        Empower dreams, fund the future – your support makes ideas a reality!
+      </h2>
+      {!isConnected && (
+        <button
+          onClick={connectWallet}
+          className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+        >
+          Connect Wallet
+        </button>
+      )}
+    </div>
+    <div className="flex flex-1 justify-center items-center">
+      <img 
+        src={heroImage} 
+        alt="Crowdfunding Illustration" 
+       className=" mx-auto m-40 ml-10 mt-20"
+      />
+    </div>
+  </div>
+</div>
 
       {/* Footer Section */}
       <footer className="bg-white dark:bg-gray-900 mt-auto">
