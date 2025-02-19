@@ -76,8 +76,3 @@ FundForTrust can be applied in various domains, including:
 - Multi-currency transactions.
 - AI-powered analytics for campaign optimization.
 - Enhanced security features such as two-factor authentication.
-
----
-
-This README provides an overview of the FundForTrust project, including its purpose, features, and implementation details. Feel free to modify it as needed!
-
