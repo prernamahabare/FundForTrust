@@ -11,7 +11,10 @@ import Home from "./components/Home";
 import Loader from "./components/Loader";
 import Sidebar from "./components/Sidebar";
 
-const contractAddress = "0x5c1B2A0F3b94BF1D87953B9B364ad2A051F2081e";
+const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS;
+console.log(process.env);
+
+console.log("from app.js", contractAddress);
 
 function App() {
   const [provider, setProvider] = useState(null);
