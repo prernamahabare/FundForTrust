@@ -1,176 +1,126 @@
-/* global BigInt */
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ethers } from "ethers";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import FormField from "./FormField";
+import CustomButton from "./CustomButton";
+import money from "../assets/money.svg"
 
-const CreateCampaign = ({ contract, signer, fetchCampaigns }) => {
-  const navigate = useNavigate(); // Initialize navigate
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
+const CreateCampaign = ({ contract }) => {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
     title: "",
     description: "",
     target: "",
     deadline: "",
     image: "",
   });
+  const [loading, setLoading] = useState(false);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+  const handleChange = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.title || !formData.description || !formData.target || !formData.deadline || !formData.image) {
-      alert("Please fill in all fields");
+    if (!form.title || !form.description || !form.target || !form.deadline || !form.image) {
+      alert("Please fill all fields");
       return;
     }
 
-    setIsLoading(true);
-
+    setLoading(true);
     try {
-      const gasEstimate = await contract.createCampaign.estimateGas(
-        await signer.getAddress(),
-        formData.title,
-        formData.description,
-        ethers.parseEther(formData.target),
-        new Date(formData.deadline).getTime() / 1000,
-        formData.image
-      );
+      const parsedTarget = ethers.parseEther(form.target);
+      const parsedDeadline = Math.floor(new Date(form.deadline).getTime() / 1000);
 
-      const gasLimit = gasEstimate + (gasEstimate * BigInt(20)) / BigInt(100);
+      // Get Ethereum provider from MetaMask
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner(); // Get the connected wallet signer
+      const userAddress = await signer.getAddress(); // Get user's address
 
-      const tx = await contract.createCampaign(
-        await signer.getAddress(),
-        formData.title,
-        formData.description,
-        ethers.parseEther(formData.target),
-        new Date(formData.deadline).getTime() / 1000,
-        formData.image,
-        {
-          gasLimit: gasLimit,
-          maxFeePerGas: ethers.parseUnits("50", "gwei"),
-          maxPriorityFeePerGas: ethers.parseUnits("2", "gwei"),
-        }
-      );
-
-      await tx.wait();
-
-      // Reset form
-      setFormData({
-        title: "",
-        description: "",
-        target: "",
-        deadline: "",
-        image: "",
+      console.log("Submitting with values:", {
+        owner: userAddress,  // Include owner
+        title: form.title,
+        description: form.description,
+        target: parsedTarget.toString(),
+        deadline: parsedDeadline,
+        image: form.image,
       });
 
-      // Refresh campaigns list
-      await fetchCampaigns(contract);
+      // Connect contract with signer
+      const contractWithSigner = contract.connect(signer);
+
+      const tx = await contractWithSigner.createCampaign(
+        userAddress,  // Pass the owner's address
+        form.title,
+        form.description,
+        parsedTarget,
+        parsedDeadline,
+        form.image
+      );
+      await tx.wait();
 
       alert("Campaign created successfully!");
-
-      // Navigate to Display Campaigns Page
-      navigate("/");
+      navigate("/display-campaign");
     } catch (error) {
       console.error("Error creating campaign:", error);
-      alert("Error creating campaign. Check console for details.");
-    } finally {
-      setIsLoading(false);
+      alert("Failed to create campaign. Check console for details.");
     }
+    setLoading(false);
   };
 
+
+
+  console.log("Contract object:", contract);
+
+
   return (
-    <div className="bg-white rounded-lg shadow p-6 mb-8">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Create New Campaign</h2>
-
+    <div className="bg-[#1c1c24] p-6 rounded-lg shadow-lg max-w-3xl mx-auto">
+      <h2 className="text-white text-2xl font-bold mb-4">Create a New Campaign</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-            Campaign Title
-          </label>
-          <input
-            id="title"
-            name="title"
-            type="text"
-            value={formData.title}
-            onChange={handleInputChange}
-            className="w-full border border-gray-300 bg-white text-gray-800 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter campaign title"
-          />
-        </div>
+        <FormField
+          labelName="Campaign Title *"
+          placeholder="Write a title"
+          inputType="text"
+          value={form.title}
+          handleChange={(e) => handleChange("title", e.target.value)}
+        />
+        <FormField
+          labelName="Story *"
+          placeholder="Write your story"
+          isTextArea
+          value={form.description}
+          handleChange={(e) => handleChange("description", e.target.value)}
+        />
 
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            rows="4"
-            className="w-full border border-gray-300 text-gray-800 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Describe your campaign"
-          />
+        <div className="w-full flex justify-start items-center p-4 bg-[#8c6dfd] h-[120px] rounded-[10px]">
+          <img src={money} alt="money" className="w-[40px] h-[40px] object-contain" />
+          <h4 className="font-epilogue font-bold text-[25px] text-white ml-[20px]">You will get 100% of the raised amount</h4>
         </div>
-
-        <div>
-          <label htmlFor="target" className="block text-sm font-medium text-gray-700 mb-1">
-            Target Amount (ETH)
-          </label>
-          <input
-            id="target"
-            name="target"
-            type="number"
-            step="0.01"
-            value={formData.target}
-            onChange={handleInputChange}
-            className="w-full border border-gray-300 text-gray-800 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="0.00"
-          />
+        <FormField
+          labelName="Goal *"
+          placeholder="ETH 0.50"
+          inputType="text"
+          value={form.target}
+          handleChange={(e) => handleChange("target", e.target.value)}
+        />
+        <FormField
+          labelName="End Date *"
+          placeholder="End Date"
+          inputType="date"
+          value={form.deadline}
+          handleChange={(e) => handleChange("deadline", e.target.value)}
+        />
+        <FormField
+          labelName="Campaign image *"
+          placeholder="Place image URL of your campaign"
+          inputType="url"
+          value={form.image}
+          handleChange={(e) => handleChange("image", e.target.value)}
+        />
+        <div className="flex justify-center items-center mt-[40px]">
+          <CustomButton styles="bg-[#1dc071]" type="submit" title={loading ? "Creating..." : "Create Campaign"} disabled={loading} />
         </div>
-
-        <div>
-          <label htmlFor="deadline" className="block text-sm font-medium text-gray-700 mb-1">
-            End Date
-          </label>
-          <input
-            id="deadline"
-            name="deadline"
-            type="date"
-            value={formData.deadline}
-            onChange={handleInputChange}
-            className="w-full border border-gray-300 text-gray-800 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">
-            Campaign Image URL
-          </label>
-          <input
-            id="image"
-            name="image"
-            type="url"
-            value={formData.image}
-            onChange={handleInputChange}
-            className="w-full border border-gray-300 text-gray-800 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter image URL"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full bg-[#1e3a8a] text-white py-2 px-4 rounded-md hover:bg-[#1e40af] focus:outline-none focus:ring-2 focus:ring-[#0d2d5c] focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-        >
-          {isLoading ? "Creating Campaign..." : "Create Campaign"}
-        </button>
       </form>
     </div>
   );

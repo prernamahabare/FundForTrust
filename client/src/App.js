@@ -59,6 +59,12 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (contract) {
+      fetchCampaigns(contract);
+    }
+  }, [contract, location.pathname]);
+
   const handleAccountsChanged = async (accounts) => {
     if (accounts.length === 0) {
       setIsConnected(false);
@@ -123,11 +129,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#0a192f] text-white flex">
-      {/* Sidebar is shown on all pages except Home */}
       {isConnected && location.pathname !== "/" && <Sidebar />}
-
-      {/* Main content area */}
-      <div className={`flex-1 p-4 ${isConnected && location.pathname !== "/" ? "ml-16" : ""}`}>
+      <div className={`flex-1 p-4 ${isConnected && location.pathname !== "/" ? "ml-[76px]" : ""}`}>
         <Navbar connectWallet={connectWallet} address={address} isConnected={isConnected} />
 
         <div className="max-w-6xl mx-auto mt-16">
@@ -137,70 +140,11 @@ function App() {
             </div>
           ) : (
             <Routes>
-              <Route
-                path="/"
-                element={
-                  <Home 
-                    isConnected={isConnected}
-                    connectWallet={() => connectWallet(false)}
-                  />
-                }
-              />
-
-              <Route
-                path="/display-campaign"
-                element={
-                  isConnected ? (
-                    <DisplayCampaigns 
-                      campaigns={campaigns} 
-                      loading={loading} 
-                      contract={contract} 
-                      fetchCampaigns={fetchCampaigns}
-                    />
-                  ) : (
-                    <div className="text-center text-gray-400 mt-10">
-                      <p>Please connect your wallet to view and create campaigns.</p>
-                    </div>
-                  )
-                }
-              />
-
-              <Route
-                path="/create-campaign"
-                element={
-                  isConnected ? (
-                    <CreateCampaign 
-                      contract={contract} 
-                      signer={signer} 
-                      fetchCampaigns={fetchCampaigns}
-                    />
-                  ) : (
-                    <div className="text-center text-gray-400 mt-10">
-                      <p>Please connect your wallet to create a campaign.</p>
-                    </div>
-                  )
-                }
-              />
-
-              <Route 
-                path="/campaign/:id" 
-                element={
-                  <CampaignDetails 
-                    campaigns={campaigns} 
-                    contract={contract}
-                  />
-                } 
-              />
-
-              <Route 
-                path="/profile" 
-                element={
-                  <Profile 
-                    address={address} 
-                    campaigns={campaigns}
-                  />
-                } 
-              />
+              <Route path="/" element={<Home isConnected={isConnected} connectWallet={() => connectWallet(false)} />} />
+              <Route path="/display-campaign" element={isConnected ? <DisplayCampaigns campaigns={campaigns} loading={loading} contract={contract} fetchCampaigns={fetchCampaigns} /> : <p className="text-center text-gray-400 mt-10">Please connect your wallet to view and create campaigns.</p>} />
+              <Route path="/create-campaign" element={isConnected ? <CreateCampaign contract={contract} signer={signer} fetchCampaigns={fetchCampaigns} /> : <p className="text-center text-gray-400 mt-10">Please connect your wallet to create a campaign.</p>} />
+              <Route path="/campaign-details/:id" element={<CampaignDetails campaigns={campaigns} contract={contract} />} />
+              <Route path="/profile" element={<Profile address={address} campaigns={campaigns} />} />
             </Routes>
           )}
         </div>
