@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { ethers } from "ethers";
 import defaultImage from "../assets/demo.jpeg";
 import CustomButton from "./CustomButton";
+import FormField from "./FormField";
 
 const CampaignDetails = ({ campaigns, contract }) => {
   const { id } = useParams();
@@ -113,24 +114,18 @@ const CampaignDetails = ({ campaigns, contract }) => {
           <p className="text-red-500 font-bold mt-4">⚠️ The funding period has ended.</p>
         ) : (
           <>
-            <input
-              type="number"
-              // min="0"
-              // step="any"
-              placeholder="ETH amount"
-              value={donationAmount}
-              onChange={(e) => setDonationAmount(e.target.value)}
-              className="w-full p-2 border rounded my-3"
-            />
+            <div className="my-5">
 
-            <div className="flex justify-center items-center mt-[40px]">
-              <button
-                onClick={donate}
-                disabled={loading}
-                className=" bg-[#1dc071] text-white p-2 rounded hover:bg-green-700"
-              >
-                {loading ? "Processing..." : "Donate"}
-              </button>
+              <FormField
+                placeholder="Enter ETH amount to donate"
+                inputType="text"
+                value={donationAmount}
+                handleChange={(e) => setDonationAmount(e.target.value)}
+              />
+            </div>
+
+            <div className="flex justify-center items-center mt-[20px]">
+              <CustomButton styles="bg-[#1dc071]" handleClick={donate} title={loading ? "Processing..." : "Donate"} disabled={loading} />
             </div>
           </>
         )}
