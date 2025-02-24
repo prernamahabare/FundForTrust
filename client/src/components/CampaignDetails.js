@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { ethers } from "ethers";
 import defaultImage from "../assets/demo.jpeg";
+import CustomButton from "./CustomButton";
 
 const CampaignDetails = ({ campaigns, contract }) => {
   const { id } = useParams();
@@ -43,10 +44,9 @@ const CampaignDetails = ({ campaigns, contract }) => {
 
   if (!campaign) return <div className="text-center mt-10 text-gray-500">Campaign not found</div>;
 
-  // ✅ Fix: Use `target` instead of `goal`
   const goal = ethers.formatEther(campaign.target || "0");
   const raised = ethers.formatEther(campaign.amountCollected || "0");
-  const remaining = Math.max(goal - raised, 0); // ✅ Ensure it doesn't go negative
+  const remaining = Math.max(goal - raised, 0);
 
   const donate = async () => {
     if (!donationAmount || isNaN(donationAmount) || Number(donationAmount) <= 0) {
@@ -65,36 +65,32 @@ const CampaignDetails = ({ campaigns, contract }) => {
       alert(`You cannot donate more than the remaining amount (${remaining} ETH).`);
       return;
     }
-  
+
     setLoading(true);
     try {
       const parsedAmount = ethers.parseEther(donationAmount);
       const tx = await contract.donateToCampaign(BigInt(id), { value: parsedAmount });
       await tx.wait();
-      
+
       alert("Donation successful!");
-      
-      // ✅ Reset the input field
       setDonationAmount("");
-  
-      // ✅ Fetch updated donors list without refreshing
+
       const [donatorAddresses, donationAmounts] = await contract.getDonators(Number(id));
       const updatedDonors = donatorAddresses.map((address, index) => ({
         address,
         amount: ethers.formatEther(donationAmounts[index] || "0"),
       }));
-  
-      setDonors(updatedDonors); // ✅ Update the donors list dynamically
+
+      setDonors(updatedDonors);
     } catch (error) {
       console.error("Error:", error);
       alert("Donation failed!");
     }
     setLoading(false);
   };
-  
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white text-black rounded-lg shadow-md">
+    <div className="bg-[#1c1c24] p-6 rounded-lg shadow-lg max-w-3xl mx-auto text-white">
       <img
         src={campaign.image}
         alt={campaign.title}
@@ -104,35 +100,37 @@ const CampaignDetails = ({ campaigns, contract }) => {
 
       <h2 className="text-2xl font-bold my-4">{campaign.title}</h2>
 
-      <div className="text-gray-600">
+      <div className="text-gray-400">
         <p><strong>Owner:</strong> {String(campaign.owner).slice(0, 6)}...{String(campaign.owner).slice(-4)}</p>
         <p><strong>Goal:</strong> {goal} ETH</p>
         <p><strong>Raised:</strong> {raised} ETH</p>
       </div>
 
-      <p className="text-gray-600 mt-4"><strong>Description:</strong> {campaign.description || "No description available."}</p>
+      <p className="text-gray-400 mt-4"><strong>Description:</strong> {campaign.description || "No description available."}</p>
 
       {isFundingEnded ? (
-        <p className="text-red-600 font-bold mt-4">⚠️ The funding period has ended.</p>
+        <p className="text-red-500 font-bold mt-4">⚠️ The funding period has ended.</p>
       ) : (
         <>
           <input
             type="number"
-            min="0"
-            step="any"
+            // min="0"
+            // step="any"
             placeholder="ETH amount"
             value={donationAmount}
             onChange={(e) => setDonationAmount(e.target.value)}
             className="w-full p-2 border rounded my-3"
           />
 
-          <button
-            onClick={donate}
-            disabled={loading}
-            className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
-          >
-            {loading ? "Processing..." : "Donate"}
-          </button>
+          <div className="flex justify-center items-center mt-[40px]">
+            <button
+              onClick={donate}
+              disabled={loading}
+              className=" bg-[#1dc071] text-white p-2 rounded hover:bg-green-700"
+            >
+              {loading ? "Processing..." : "Donate"}
+            </button>
+          </div>
         </>
       )}
 
@@ -141,7 +139,7 @@ const CampaignDetails = ({ campaigns, contract }) => {
         {donors.length > 0 ? (
           <ul className="mt-2">
             {donors.map((donor, index) => (
-              <li key={index} className="text-gray-700">
+              <li key={index} className="text-gray-400">
                 {donor.address} donated <strong>{donor.amount} ETH</strong>
               </li>
             ))}
