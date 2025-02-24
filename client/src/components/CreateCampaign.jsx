@@ -75,53 +75,55 @@ const CreateCampaign = ({ contract }) => {
 
 
   return (
-    <div className="bg-[#1c1c24] p-6 rounded-lg shadow-lg max-w-3xl mx-auto">
-      <h2 className="text-white text-2xl font-bold mb-4">Create a New Campaign</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <FormField
-          labelName="Campaign Title *"
-          placeholder="Write a title"
-          inputType="text"
-          value={form.title}
-          handleChange={(e) => handleChange("title", e.target.value)}
-        />
-        <FormField
-          labelName="Story *"
-          placeholder="Write your story"
-          isTextArea
-          value={form.description}
-          handleChange={(e) => handleChange("description", e.target.value)}
-        />
+    <div className="p-6">
+      <div className="bg-[#1c1c24] p-6 rounded-lg shadow-lg max-w-3xl mx-auto">
+        <h2 className="text-white text-2xl font-bold mb-4">Create a New Campaign</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <FormField
+            labelName="Campaign Title *"
+            placeholder="Write a title"
+            inputType="text"
+            value={form.title}
+            handleChange={(e) => handleChange("title", e.target.value)}
+          />
+          <FormField
+            labelName="Story *"
+            placeholder="Write your story"
+            isTextArea
+            value={form.description}
+            handleChange={(e) => handleChange("description", e.target.value)}
+          />
 
-        <div className="w-full flex justify-start items-center p-4 bg-[#8c6dfd] h-[120px] rounded-[10px]">
-          <img src={money} alt="money" className="w-[40px] h-[40px] object-contain" />
-          <h4 className="font-epilogue font-bold text-[25px] text-white ml-[20px]">You will get 100% of the raised amount</h4>
-        </div>
-        <FormField
-          labelName="Goal *"
-          placeholder="ETH 0.50"
-          inputType="text"
-          value={form.target}
-          handleChange={(e) => handleChange("target", e.target.value)}
-        />
-        <FormField
-          labelName="End Date *"
-          placeholder="End Date"
-          inputType="date"
-          value={form.deadline}
-          handleChange={(e) => handleChange("deadline", e.target.value)}
-        />
-        <FormField
-          labelName="Campaign image *"
-          placeholder="Place image URL of your campaign"
-          inputType="url"
-          value={form.image}
-          handleChange={(e) => handleChange("image", e.target.value)}
-        />
-        <div className="flex justify-center items-center mt-[40px]">
-          <CustomButton styles="bg-[#1dc071]" type="submit" title={loading ? "Creating..." : "Create Campaign"} disabled={loading} />
-        </div>
-      </form>
+          <div className="w-full flex justify-start items-center p-4 bg-[#8c6dfd] h-[120px] rounded-[10px]">
+            <img src={money} alt="money" className="w-[40px] h-[40px] object-contain" />
+            <h4 className="font-epilogue font-bold text-[25px] text-white ml-[20px]">You will get 100% of the raised amount</h4>
+          </div>
+          <FormField
+            labelName="Goal *"
+            placeholder="ETH 0.50"
+            inputType="text"
+            value={form.target}
+            handleChange={(e) => handleChange("target", e.target.value)}
+          />
+          <FormField
+            labelName="End Date *"
+            placeholder="End Date"
+            inputType="date"
+            value={form.deadline}
+            handleChange={(e) => handleChange("deadline", e.target.value)}
+          />
+          <FormField
+            labelName="Campaign image *"
+            placeholder="Place image URL of your campaign"
+            inputType="url"
+            value={form.image}
+            handleChange={(e) => handleChange("image", e.target.value)}
+          />
+          <div className="flex justify-center items-center mt-[40px]">
+            <CustomButton styles="bg-[#1dc071]" type="submit" title={loading ? "Creating..." : "Create Campaign"} disabled={loading} />
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

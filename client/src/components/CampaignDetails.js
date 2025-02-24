@@ -90,63 +90,65 @@ const CampaignDetails = ({ campaigns, contract }) => {
   };
 
   return (
-    <div className="bg-[#1c1c24] p-6 rounded-lg shadow-lg max-w-3xl mx-auto text-white">
-      <img
-        src={campaign.image}
-        alt={campaign.title}
-        className="w-full h-64 object-cover rounded-lg"
-        onError={(e) => (e.target.src = defaultImage)}
-      />
+    <div className="p-6">
+      <div className="bg-[#1c1c24] p-6 rounded-lg shadow-lg max-w-3xl mx-auto text-white">
+        <img
+          src={campaign.image}
+          alt={campaign.title}
+          className="w-full h-64 object-cover rounded-lg"
+          onError={(e) => (e.target.src = defaultImage)}
+        />
 
-      <h2 className="text-2xl font-bold my-4">{campaign.title}</h2>
+        <h2 className="text-2xl font-bold my-4">{campaign.title}</h2>
 
-      <div className="text-gray-400">
-        <p><strong>Owner:</strong> {String(campaign.owner).slice(0, 6)}...{String(campaign.owner).slice(-4)}</p>
-        <p><strong>Goal:</strong> {goal} ETH</p>
-        <p><strong>Raised:</strong> {raised} ETH</p>
-      </div>
+        <div className="text-gray-400">
+          <p><strong>Owner:</strong> {String(campaign.owner).slice(0, 6)}...{String(campaign.owner).slice(-4)}</p>
+          <p><strong>Goal:</strong> {goal} ETH</p>
+          <p><strong>Raised:</strong> {raised} ETH</p>
+        </div>
 
-      <p className="text-gray-400 mt-4"><strong>Description:</strong> {campaign.description || "No description available."}</p>
+        <p className="text-gray-400 mt-4"><strong>Description:</strong> {campaign.description || "No description available."}</p>
 
-      {isFundingEnded ? (
-        <p className="text-red-500 font-bold mt-4">⚠️ The funding period has ended.</p>
-      ) : (
-        <>
-          <input
-            type="number"
-            // min="0"
-            // step="any"
-            placeholder="ETH amount"
-            value={donationAmount}
-            onChange={(e) => setDonationAmount(e.target.value)}
-            className="w-full p-2 border rounded my-3"
-          />
-
-          <div className="flex justify-center items-center mt-[40px]">
-            <button
-              onClick={donate}
-              disabled={loading}
-              className=" bg-[#1dc071] text-white p-2 rounded hover:bg-green-700"
-            >
-              {loading ? "Processing..." : "Donate"}
-            </button>
-          </div>
-        </>
-      )}
-
-      <div className="mt-6">
-        <h3 className="text-lg font-semibold">Donors</h3>
-        {donors.length > 0 ? (
-          <ul className="mt-2">
-            {donors.map((donor, index) => (
-              <li key={index} className="text-gray-400">
-                {donor.address} donated <strong>{donor.amount} ETH</strong>
-              </li>
-            ))}
-          </ul>
+        {isFundingEnded ? (
+          <p className="text-red-500 font-bold mt-4">⚠️ The funding period has ended.</p>
         ) : (
-          <p className="text-gray-500">No donations yet.</p>
+          <>
+            <input
+              type="number"
+              // min="0"
+              // step="any"
+              placeholder="ETH amount"
+              value={donationAmount}
+              onChange={(e) => setDonationAmount(e.target.value)}
+              className="w-full p-2 border rounded my-3"
+            />
+
+            <div className="flex justify-center items-center mt-[40px]">
+              <button
+                onClick={donate}
+                disabled={loading}
+                className=" bg-[#1dc071] text-white p-2 rounded hover:bg-green-700"
+              >
+                {loading ? "Processing..." : "Donate"}
+              </button>
+            </div>
+          </>
         )}
+
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold">Donors</h3>
+          {donors.length > 0 ? (
+            <ul className="mt-2">
+              {donors.map((donor, index) => (
+                <li key={index} className="text-gray-400">
+                  {donor.address} donated <strong>{donor.amount} ETH</strong>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-500">No donations yet.</p>
+          )}
+        </div>
       </div>
     </div>
   );

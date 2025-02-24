@@ -27,16 +27,17 @@ const DisplayCampaigns = ({ title, isLoading, campaigns }) => {
   };
 
   return (
-    <div>
-      <h1 className="font-epilogue font-semibold text-[18px] text-white text-left">
-        {title} ({campaigns?.length || 0})
+    <div className="p-6 flex flex-col items-center">
+      <h1 className="font-epilogue font-semibold text-[22px] text-white text-center mb-6">
+        All Campaigns ({campaigns?.length || 0})
       </h1>
 
-      <div className="flex flex-wrap mt-[20px] gap-[26px]">
+      {/* Increased space between cards */}
+      <div className="flex flex-wrap justify-center items-center mt-[20px] gap-[50px] max-w-6xl">
         {isLoading && <img src={loader} alt="loader" className="w-[100px] h-[100px] object-contain" />}
 
         {!isLoading && campaigns?.length === 0 && (
-          <p className="font-epilogue font-semibold text-[14px] leading-[30px] text-[#818183]">
+          <p className="font-epilogue font-semibold text-[16px] leading-[30px] text-[#818183] text-center">
             No campaigns available
           </p>
         )}

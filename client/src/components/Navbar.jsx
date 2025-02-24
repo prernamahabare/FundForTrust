@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
 import { FiMenu } from "react-icons/fi";
+import logo from "../assets/image.png"
 
 const Navbar = ({ connectWallet, address, isConnected }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,7 +25,8 @@ const Navbar = ({ connectWallet, address, isConnected }) => {
 
         {/* Logo */}
         <Link to="/" className="flex items-center">
-          <img src="https://flowbite.com/docs/images/logo.svg" className="h-8" alt="Logo" />
+          <img src={logo} className="h-8" alt="Logo" />
+          {/* <FcDonate className="h-8"/> */}
           <span className="ml-2 text-2xl font-semibold text-white">CrowdFunding</span>
         </Link>
 

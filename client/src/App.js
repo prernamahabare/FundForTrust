@@ -12,9 +12,9 @@ import Loader from "./components/Loader";
 import Sidebar from "./components/Sidebar";
 
 const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS;
-console.log(process.env);
+// console.log(process.env);
 
-console.log("from app.js", contractAddress);
+// console.log("from app.js", contractAddress);
 
 function App() {
   const [provider, setProvider] = useState(null);
@@ -133,10 +133,11 @@ function App() {
   return (
     <div className="min-h-screen bg-[#0a192f] text-white flex">
       {isConnected && location.pathname !== "/" && <Sidebar />}
-      <div className={`flex-1 p-4 ${isConnected && location.pathname !== "/" ? "ml-[76px]" : ""}`}>
+      <div className={`flex-1 ${isConnected && location.pathname !== "/" ? "ml-[76px]" : ""}`}>
         <Navbar connectWallet={connectWallet} address={address} isConnected={isConnected} />
 
-        <div className="max-w-6xl mx-auto mt-16">
+        {/* <div className="max-w-6xl mx-auto mt-16"> */}
+        <div className=" mx-auto mt-16">
           {loading ? (
             <div className="flex bg-[#0a192f] items-center justify-center min-h-[60vh]">
               <Loader />
@@ -153,6 +154,7 @@ function App() {
         </div>
       </div>
     </div>
+    // </div>
   );
 }
 
