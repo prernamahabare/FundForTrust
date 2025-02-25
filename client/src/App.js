@@ -10,6 +10,7 @@ import Navbar from "./components/Navbar";
 import Home from "./components/Home";
 import Loader from "./components/Loader";
 import Sidebar from "./components/Sidebar";
+import Settings from "./components/Setting";
 
 const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS;
 // console.log(process.env);
@@ -149,6 +150,10 @@ function App() {
               <Route path="/create-campaign" element={isConnected ? <CreateCampaign contract={contract} signer={signer} fetchCampaigns={fetchCampaigns} /> : <p className="text-center text-gray-400 mt-10">Please connect your wallet to create a campaign.</p>} />
               <Route path="/campaign-details/:id" element={<CampaignDetails campaigns={campaigns} contract={contract} />} />
               <Route path="/profile" element={<Profile address={address} campaigns={campaigns} />} />
+              <Route
+                path="/settings"
+                element={<Settings address={address} contract={contract} />}
+              />
             </Routes>
           )}
         </div>

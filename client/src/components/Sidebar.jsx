@@ -26,11 +26,11 @@ const Sidebar = () => {
           </div>
         </Link>
       </div>
-      <div className="pb-4 flex justify-center">
+      <Link to="/settings">
         <div className="w-[48px] h-[48px] flex justify-center items-center rounded-[10px] bg-[#1c1c24] shadow-secondary cursor-pointer hover:bg-[#3a3d4b]">
           <FiSettings className="w-6 h-6 text-white" title="Settings" />
         </div>
-      </div>
+      </Link>
     </aside>
   );
 };
