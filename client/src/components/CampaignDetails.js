@@ -141,6 +141,8 @@ const CampaignDetails = ({ campaigns, contract }) => {
 
         <p className="text-gray-400 mt-4"><strong>Description:</strong> {campaignData.description || "No description available."}</p>
 
+        {/* Goal reached field added */}
+
         {isGoalReached ? (
           <p className="text-green-500 font-bold mt-4">🎉 Goal Reached! No more donations needed.</p>
         ) : isFundingEnded ? (
