@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast, { Toaster } from 'react-hot-toast';
 import { ethers } from "ethers";
 import FormField from "./FormField";
 import CustomButton from "./CustomButton";
@@ -24,7 +25,7 @@ const CreateCampaign = ({ contract }) => {
     e.preventDefault();
 
     if (!form.title || !form.description || !form.target || !form.deadline || !form.image) {
-      alert("Please fill all fields");
+      toast.error("Please fill all fields");
       return;
     }
 
@@ -38,14 +39,14 @@ const CreateCampaign = ({ contract }) => {
       const signer = await provider.getSigner(); // Get the connected wallet signer
       const userAddress = await signer.getAddress(); // Get user's address
 
-      console.log("Submitting with values:", {
-        owner: userAddress,  // Include owner
-        title: form.title,
-        description: form.description,
-        target: parsedTarget.toString(),
-        deadline: parsedDeadline,
-        image: form.image,
-      });
+      // console.log("Submitting with values:", {
+      //   owner: userAddress,  // Include owner
+      //   title: form.title,
+      //   description: form.description,
+      //   target: parsedTarget.toString(),
+      //   deadline: parsedDeadline,
+      //   image: form.image,
+      // });
 
       // Connect contract with signer
       const contractWithSigner = contract.connect(signer);
@@ -60,22 +61,18 @@ const CreateCampaign = ({ contract }) => {
       );
       await tx.wait();
 
-      alert("Campaign created successfully!");
+      toast.success("Campaign created successfully!");
       navigate("/display-campaign");
     } catch (error) {
       console.error("Error creating campaign:", error);
-      alert("Failed to create campaign. Check console for details.");
+      toast.error("Failed to create campaign. Check console for details.");
     }
     setLoading(false);
   };
 
-
-
-  console.log("Contract object:", contract);
-
-
   return (
     <div className="p-6">
+      <Toaster />
       <div className="bg-[#1c1c24] p-6 rounded-lg shadow-lg max-w-3xl mx-auto">
         <h2 className="text-white text-2xl font-bold mb-4">Create a New Campaign</h2>
         <form onSubmit={handleSubmit} className="space-y-4">

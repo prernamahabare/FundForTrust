@@ -1,6 +1,7 @@
 /* global BigInt */
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import toast, { Toaster } from 'react-hot-toast';
 import { ethers } from "ethers";
 import defaultImage from "../assets/demo.jpeg";
 import CustomButton from "./CustomButton";
@@ -60,19 +61,19 @@ const CampaignDetails = ({ campaigns, contract }) => {
 
   const donate = async () => {
     if (!donationAmount || isNaN(donationAmount) || Number(donationAmount) <= 0) {
-      alert("Please enter a valid amount");
+      toast.error("Please enter a valid amount");
       return;
     }
     if (isGoalReached) {
-      alert("Donation goal already reached! You cannot donate.");
+      toast.success("Donation goal already reached! You cannot donate.");
       return;
     }
     if (isFundingEnded) {
-      alert("The funding period has ended. Donations are no longer allowed.");
+      toast("The funding period has ended. Donations are no longer allowed.");
       return;
     }
     if (Number(donationAmount) > remaining) {
-      alert(`You cannot donate more than the remaining amount (${remaining} ETH).`);
+      toast.error(`You cannot donate more than the remaining amount (${remaining} ETH).`);
       return;
     }
   
@@ -108,18 +109,19 @@ const CampaignDetails = ({ campaigns, contract }) => {
       
       setDonors(updatedDonors);
       
-      alert("Donation successful!");
+      toast.success("Donation successful!");
       setDonationAmount("");
   
     } catch (error) {
       console.error("Error:", error);
-      alert("Donation failed!");
+      toast.error("Donation failed!");
     }
     setLoading(false);
   };
 
   return (
     <div className="p-6">
+      <Toaster />
       <div className="bg-[#1c1c24] p-6 rounded-lg shadow-lg max-w-3xl mx-auto text-white">
         <img
           src={campaignData.image || defaultImage}

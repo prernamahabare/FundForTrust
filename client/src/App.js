@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ethers, BrowserProvider, Contract } from "ethers";
+import toast, { Toaster } from 'react-hot-toast';
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import contractABI from "./contractABI.json";
 import CreateCampaign from "./components/CreateCampaign";
@@ -12,10 +13,7 @@ import Loader from "./components/Loader";
 import Sidebar from "./components/Sidebar";
 import Settings from "./components/Setting";
 
-const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS;
-// console.log(process.env);
-
-// console.log("from app.js", contractAddress);
+const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS.replace(/['"]/g, '').trim();
 
 function App() {
   const [provider, setProvider] = useState(null);
@@ -85,7 +83,7 @@ function App() {
     setLoading(true);
     try {
       if (!window.ethereum) {
-        alert("Please install MetaMask!");
+        toast.error("Please install MetaMask!");
         return;
       }
 
@@ -101,13 +99,13 @@ function App() {
       setIsConnected(true);
 
       await fetchCampaigns(crowdfundingContract);
-
+     
       if (shouldNavigate && location.pathname !== "/") {
         navigate("/display-campaign");
       }
     } catch (error) {
       console.error("Error connecting wallet:", error);
-      alert("Error connecting wallet. Check console for details.");
+      toast.error("Error connecting wallet. Check console for details.");
     }
     setLoading(false);
   };
@@ -130,9 +128,11 @@ function App() {
       </div>
     );
   }
-
+  
   return (
     <div className="min-h-screen bg-[#0a192f] text-white flex">
+      <Toaster />
+      
       {isConnected && location.pathname !== "/" && <Sidebar />}
       <div className={`flex-1 ${isConnected && location.pathname !== "/" ? "ml-[76px]" : ""}`}>
         <Navbar connectWallet={connectWallet} address={address} isConnected={isConnected} />
