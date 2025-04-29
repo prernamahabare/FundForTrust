@@ -52,30 +52,32 @@ const FundCard = ({ campaign, handleClick }) => {
             </p>
           </div>
           <div className="flex flex-col">
-            <h4 className="font-epilogue font-semibold text-[14px] text-[#b2b3bd] leading-[22px]">
-              {daysLeft} {daysLeft === 1 ? "Day" : "Days"}
+            <h4 className={`font-epilogue font-semibold text-[14px] leading-[22px] ${daysLeft <= 3 && daysLeft != 0 ? "text-[#bf5454]" : "text-[#b2b3bd]"
+              }`}>
+              {daysLeft}
+              {daysLeft <= 3 ? "Day" : "Days"}
             </h4>
-            <p className="mt-[3px] font-epilogue font-normal text-[12px] text-[#808191] truncate">
-              Left
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center mt-[20px] gap-[12px]">
-          <div className="w-[30px] h-[30px] rounded-full flex justify-center items-center bg-[#13131a]">
-            <span className="text-white text-xs">🧑‍💻</span>
-          </div>
-          <p className="flex-1 font-epilogue font-normal text-[12px] text-[#808191] truncate">
-            by{" "}
-            <span className="text-[#b2b3bd]">
-              {campaign.owner
-                ? `${String(campaign.owner).slice(0, 6)}...${String(campaign.owner).slice(-4)}`
-                : "Unknown"}
-            </span>
+          <p className="mt-[3px] font-epilogue font-normal text-[12px] text-[#808191] truncate">
+            Left
           </p>
         </div>
       </div>
+
+      <div className="flex items-center mt-[20px] gap-[12px]">
+        <div className="w-[30px] h-[30px] rounded-full flex justify-center items-center bg-[#13131a]">
+          <span className="text-white text-xs">🧑‍💻</span>
+        </div>
+        <p className="flex-1 font-epilogue font-normal text-[12px] text-[#808191] truncate">
+          by{" "}
+          <span className="text-[#b2b3bd]">
+            {campaign.owner
+              ? `${String(campaign.owner).slice(0, 6)}...${String(campaign.owner).slice(-4)}`
+              : "Unknown"}
+          </span>
+        </p>
+      </div>
     </div>
+    </div >
   );
 };
 
